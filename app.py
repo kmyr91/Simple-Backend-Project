@@ -6,8 +6,17 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_required, login_user, current_user
 import logging
 logging.basicConfig(filename='error.log', level=logging.DEBUG)
+from flask_cors import CORS
+from flask import send_from_directory
+
+app = Flask(__name__)
+CORS(app)
+app.config['SECRET_KEY'] = 'Canada0782'
+app.debug = True
 
 Base = declarative_base()
+
+
 
 class Task(Base):
     __tablename__ = 'tasks'
@@ -33,9 +42,6 @@ engine = create_engine('mysql+mysqlconnector://bcproject:Chester5$@bcproject.mys
 Session = sessionmaker(bind=engine)
 Base.metadata.create_all(engine)
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'nada01'
-app.debug = True
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -89,6 +95,15 @@ def login():
     else:
         app.logger.error('Login unsuccessful')
         return jsonify({'error': 'Login unsuccessful'}), 400
+
+
+@app.route('/home.html')
+def home():
+    return send_from_directory('static', 'home.html')  # Assuming 'home.html' is in a 'static' directory
+
+@app.route('/tasks_page')
+def tasks_page():
+    return app.send_static_file('tasks.html')   
 
 @app.route('/register', methods=['POST'])
 def register():

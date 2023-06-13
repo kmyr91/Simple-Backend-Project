@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tasks</title>
+</head>
+<body>
+
+<h2>Tasks</h2>
+
+<form id="new-task-form">
+    <input type="text" id="new-task-title" placeholder="Enter task title" required>
+    <button type="submit">Add Task</button>
+</form>
+
+<div id="tasks-list">
+    <!-- Tasks will be added here -->
+</div>
+
+<script>
+// Event listener for the form submit event
+document.getElementById('new-task-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    var title = document.getElementById('new-task-title').value;
+
+    // Send a POST request to the server to create a new task
+    fetch('http://127.0.0.1:5000/tasks', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            'title': title
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.message) {
+            alert(data.message);
+            loadTasks();  // Reload tasks after a new one is added
+        } else {
+            alert(data.error);
+        }
+    })
+    .catch(e => {
+        console.error('An error occurred', e);
+        alert('An error occurred: ' + e.message);
+    });
+});
+
+// Function to load tasks from the server and add them to the page
+function loadTasks() {
+    fetch('http://127.0.0.1:5000/tasks', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(tasks => {
+        var tasksList = document.getElementById('tasks-list');
+        tasksList.innerHTML = '';  // Clear the list
+        for (var i = 0; i < tasks.length; i++) {
+            // Add each task to the list
+            var taskDiv = document.createElement('div');
+            taskDiv.textContent = tasks[i].title;
+            tasksList.appendChild(taskDiv);
+        }
+    })
+    .catch(e => {
+        console.error('An error occurred', e);
+        alert('An error occurred: ' + e.message);
+    });
+}
+
+// Load tasks when the page loads
+window.onload = loadTasks;
+</script>
+
+</body>
+</html>
